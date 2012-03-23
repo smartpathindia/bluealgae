@@ -1,0 +1,26 @@
+BlueAlgae Distribution  is aimed to develop a simple Linux distro
+building for embedded systems on x86, ARM, mips controllers with
+latest features like
+1. Embedded UI framework based on python
+2. Framebuffer based backend
+3. X11 based embedded framework
+4. wayland based embedded framework
+5. HTML5 support.
+6. kiosk mode applications
+7. Device Settings Framework
+8. Remote upgradation Framework
+9. Remote Control framework
+10.Video and Audio conferencing capabilities. 
+
+many more ......
+
+BlueAlgae also  Release 4 versions of Linux live CD/DVD/USB stick 
+distributions called
+1. friction - distribution for mechanical/civil students
+2. shock    - distribution for electrical and electronics engineers
+3. strings  - music lovers linux distribution
+4. vibes    - Digital signage linux platform.
+
+
+
+
