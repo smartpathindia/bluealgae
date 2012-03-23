@@ -1,0 +1,24 @@
+
+#!/bin/sh -e
+
+PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
+
+[ -x /usr/bin/ba-gprs ] || exit 0
+case "$1" in
+start)
+	i=0
+	while [ $i -eq 0 ]; 
+	do
+	/usr/bin/ba-gprs &
+	i=`expr $i + 1`
+	done
+	;;
+
+stop)
+	killall -9 ba-gprs  2>/dev/null
+	;;
+*)
+	;;
+esac
+exit 0
+

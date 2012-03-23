@@ -1,0 +1,32 @@
+
+#!/bin/sh -e
+
+PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
+
+[ -x /sbin/ifconfig ] || exit 0
+case "$1" in
+start)
+	for i in /etc/network/devices/*
+	do
+	NAME=`cat $i|grep -i NAME|awk -F'=' {print $2}`
+	IPADDR=`cat $i|grep -i IPADDR|awk -F'=' {print $2}`
+	PROTO=`cat $i|grep -i PROTO|awk -F'=' {print $2}`
+	GATEWAY=`cat $i|grep -i GATEWAY|awk -F'=' {print $2}`
+	NETMASK=`cat $i|grep -i NETMASK|awk -F'=' {print $2}`
+	ifconfig $NAME $IPADDR $NETMASK up
+	done
+	cat /etc/network/dns/preferred >/etc/resolv.conf
+	;;
+
+stop)
+	for i in /etc/network/devices/*
+	do
+	NAME=`cat $i|grep -i NAME|awk -F'=' {print $2}`
+	ifconfig $NAME 0.0.0.0 down
+	done
+	;;
+*)
+	;;
+esac
+exit 0
+

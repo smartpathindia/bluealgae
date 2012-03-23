@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+#
+#
+INSTALL_BASE=$1
+basedirs=`cat $2/base/base.dirs`
+for i in $basedirs
+do
+mkdir -p $INSTALL_BASE/$i
+done
+for i in 1 2 3 4 5 6 7 8
+do
+mkdir -p $INSTALL_BASE/man/man$i
+mkdir -p $INSTALL_BASE/usr/man/man$i
+done
+
+mkdir -p $1/apps

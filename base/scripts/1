@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+#
+#
+TOPDIR=$1
+PRODUCT=$2
+CORE_PREFIX=$3
+PREFIX=$4
+OUTFILE=$5
+RFSTYPE=$6
+if [ $# -lt 5 ]; then
+echo "too less args"
+exit 1
+fi
+ROOT_BASE=$TOPDIR/release/$PRODUCT
+if [ -z $OUTFILE ]; then
+OUTFILE=rfs.img
+fi
+
+basedirs=`cat $TOPDIR/base/scripts/base/base.dirs`
+for i in $basedirs
+do
+mkdir -p $ROOT_BASE/$i
+done
+cd $(TOP_TEMPLATEDIR)
+cd ..
+cd tmpfs && tar -czf ../tmpfs.tgz ./
+cd ..
+tar -xzf fs.tgz -C $ROOT_BASE
+cp -a tmpfs.tgz $ROOT_BASE/backup
+echo "start core"
+if [ -d $CORE_PREFIX ]; then
+rm -f /tmp/out.tar
+cd $CORE_PREFIX && tar -cvf /tmp/out.tar . 
+cd $CWD && tar -xvf /tmp/out.tar -C $ROOT_BASE
+cd $ROOT_BASE && ln -sf / core
+cd $CWD
+fi
+echo "mkfs.jffs"
+/usr/sbin/mkfs.jffs2 -e 128 -l -d $ROOT_BASE -o $OUTFILE

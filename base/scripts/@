@@ -1,0 +1,23 @@
+#
+#  Author : Ganesh Gudigara
+#
+#
+#
+##############################################################################
+TOPDIR := $(shell cd ../../ && pwd)
+SRCDIR := $(shell pwd)
+include $(TOPDIR)/dist/config.mk
+export CROSS_COMPILE=$(CROSS)
+
+.PHONY:  $(BOOTLOADER) 
+
+
+all: $(DESTDIR)/$(PREFIX)/apps $(BOOTLOADER)
+
+$(KERNEL):
+	  cd $(KERNELDIR) && make 
+$(BOOTLOADER):
+	  cd $(BOOTLOADER) && make
+
+$(DESTDIR)/$(PREFIX)/apps:
+	./createbase $(DESTDIR)/$(PREFIX) $(SRCDIR)

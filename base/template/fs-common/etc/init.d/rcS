@@ -1,0 +1,149 @@
+#!/bin/sh
+HOSTNAME=`cat /etc/productname`
+PRODUCT=`cat /etc/productname`
+VERSION=`cat /etc/productversion`
+hostname $HOSTNAME
+
+
+#lets replace log_msg with logger bootlogfile
+log_msg()
+{
+	echo $*
+}
+
+# $1 - status
+# $2 - (1 - exit severe issue)
+#    - (0 - error but ok)
+status ()
+{
+	if [ $1 -eq 0 ] ; then
+		 log_msg  "[SUCCESS]"
+	else
+		log_msg "[FAILED]"
+	
+		if [ $2 -eq 1 ] ; then
+			log_msg "... Failed to init Device -- ABORT."
+			exit 1
+		fi
+	fi
+
+}
+
+log_msg ""	
+log_msg "" 
+log_msg "    $PRODUCT Release version $VERSION    "
+log_msg "    Copyright (C) SmartPath India<www.smartpathindia.com> Pvt Ltd. "
+log_msg ""
+log_msg ""
+
+
+
+
+
+
+# -------------------------------------------------
+#
+# Mount proc, sys, proc/bus/usb, dev, devpts and
+# other filesystems specified in /etc/fstab
+#
+# -------------------------------------------------
+
+if [ ! -f /proc/partitions ]; then
+log_msg -n " Mounting /proc             : "
+mount -n -t proc /proc /proc
+status $? 1
+fi
+
+
+
+
+
+if [ ! -d /sys/bus ]; then
+log_msg -n " Mounting /sys              : "
+mount -n -t sysfs sysfs /sys
+status $? 1
+fi
+
+
+
+
+if [ -d /proc/bus/usb ]; then
+mount -n -t usbdevfs usbdevfs /proc/bus/usb
+fi
+
+log_msg -n " Mounting /dev              : "
+mount -n -t tmpfs mdev /dev
+status $? 1
+
+
+
+# fstab filesystems   ---------------------------------------------
+log_msg -n " Mounting fstab filesystems : "
+mount -a
+status $? 0
+
+
+log_msg -n " Mounting /dev/pts          : "
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+status $? 1
+
+log_msg -n " Enabling hot-plug          : "
+log_msg "/sbin/mdev" > /proc/sys/kernel/hotplug
+status $? 0
+
+log_msg -n " Creating /dev   tree         : "
+mkdir /dev/input
+mkdir /dev/snd
+
+mdev -s
+status $? 0
+
+#   ---------------------------------------------
+#   Set PATH
+#   ---------------------------------------------
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+
+
+# -------------------------
+# Create var and tmp
+# -------------------------
+
+log_msg -n " Creating /var        : "
+tar -xzf /backup/tmpfs.tgz -C /
+status $? 0
+
+
+
+#   ---------------------------------------------
+#   Start daemons
+#   ---------------------------------------------
+
+log_msg -n " Starting syslogd           : "
+/sbin/syslogd
+status $? 0
+
+log_msg -n " Starting telnetd           : "
+/usr/sbin/telnetd
+status $? 0
+
+mkdir /dev/v4l
+ln -s /dev/video1 /dev/v4l/video1
+ln -s /dev/video2 /dev/v4l/video2
+
+
+#   ---------------------------------------------
+#   Done!
+#   ---------------------------------------------
+log_msg ""
+log_msg "Init complete!"
+log_msg ""
+log_msg "starting services ...."
+
+# ---------------------
+# START services(utmp need to present)
+# ----------------------
+rm -f /var/run/utmp
+touch /var/run/utmp
+#rlevel=`runlevel`
+#/etc/init.d/rc $rlevel

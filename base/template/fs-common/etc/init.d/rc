@@ -1,0 +1,66 @@
+#! /bin/sh
+#
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+export PATH
+# Ignore CTRL-C only in this shell, so we can interrupt subprocesses.
+trap ":" INT QUIT TSTP
+d=.d
+runlevel.d=$1$d
+if [ -d /etc/rc$runlevel.d ]
+then
+	case "$runlevel" in
+		0|6)
+			ACTION=stop
+			;;
+	        S)
+		        ACTION=start
+			;;
+		*)
+			ACTION=start
+			;;
+	esac
+
+		# Run all scripts with the same level in parallel
+		CURLEVEL=""
+		for s in /etc/rc$runlevel.d/K*
+		do
+			# Extract order value from symlink
+			level=${s#/etc/rc$runlevel.d/K}
+			level=${level%%[a-z]*}
+			if [ "$level" = "$CURLEVEL" ]
+			then
+				continue
+			fi
+			CURLEVEL=$level
+			SCRIPTS=""
+			for i in /etc/rc$runlevel.d/K$level*
+			do
+				# Check if the script is there.
+				[ ! -f $i ] && continue
+				 $i stop
+			done
+		done
+	# Now run the START scripts for this runlevel.
+	# Run all scripts with the same level in parallel
+	CURLEVEL=""
+	for s in /etc/rc$runlevel.d/S*
+	do
+		# Extract order value from symlink
+		level=${s#/etc/rc$runlevel.d/S}
+		level=${level%%[a-z]*}
+		if [ "$level" = "$CURLEVEL" ]
+		then
+			continue
+		fi
+		CURLEVEL=$level
+		SCRIPTS=""
+		for i in /etc/rc$runlevel.d/S$level*
+		do
+			[ ! -f $i ] && continue
+			$i start
+		done
+	done
+fi
+
+
+

@@ -1,0 +1,13 @@
+PRODUCTVERSION=0.0.1
+PRODUCTNAME=BlueAlgae
+RFSTYPE=initrd
+KERNEL_IMAGE=uImage
+KERNEL_VERSION=2.6.27
+KERNEL_LOCALSRCDIR=omap/beagle
+BOOTLOADER_IMAGE=u-boot
+BOOTLOADER_CONFIG=omap3_beagle_config
+ROOTFS_IMAGE=rfs.img
+ARCH=arm
+CROSS=arm-none-linux-gnueabi-
+#CROSS=arm-linux-
+TOOLCHAINDIR := /opt/arm-none-linux-gnueabi/

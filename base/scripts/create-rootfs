@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+#
+#
+TOPDIR=$1
+PRODUCT=$2
+CORE_PREFIX=$3
+PREFIX=$4
+OUTFILE=$5
+RFSTYPE=$6
+TOP_TEMPLATEDIR=$TOPDIR/base/template
+if [ $# -lt 5 ]; then
+echo "too less args"
+exit 1
+fi
+ROOT_BASE=$TOPDIR/release/$PRODUCT
+if [ -z $OUTFILE ]; then
+OUTFILE=rfs.img
+fi
+
+basedirs=`cat $TOPDIR/base/scripts/base/base.dirs`
+for i in $basedirs
+do
+mkdir -p $ROOT_BASE/$i
+done
+echo -ne "copying template files....."
+cp -a $TOP_TEMPLATEDIR/fs-common/* $ROOT_BASE
+cp -a $TOP_TEMPLATEDIR/$PRODUCT/fs/* $ROOT_BASE
+cp -a $TOP_TEMPLATEDIR/tmpfs-common/* $ROOT_BASE
+cp -a $TOP_TEMPLATEDIR/$PRODUCT/tmpfs/* $ROOT_BASE
+echo "done"
+echo -ne "start copying core files...."
+if [ -d $DESTDIR/$CORE_PREFIX ]; then
+cp -a $DESTDIR/$CORE_PREFIX/* $ROOT_BASE
+fi
+
+
+
+
+create_image()
+{
+rfs=$1
+ switch $1 in
+   jffs2)
+	mkfs.jffs2 -e 128 -l -d $2 -o $3
+	;;
+    romfs)
+       genromfs -f $OUTFILE -d $2
+	;;
+    ext2|ext3|vfat)
+	size=`du -s $2`
+	let "size=$size+1000"
+	ket "count=$size*2"
+	dd if=/dev/zero of=$3 bs=512 count=$count
+	losetup /dev/loop0 $3
+	mkfs.${rfs}	/dev/loop0
+	tempdir=`mktemp`
+	mkdir -p $tempdir
+	mount -t $1 /dev/loop0 $tempdir
+	cp -a $2 $tempdir
+	sync
+	umount $tempdir
+	;;
+   *)
+	echo "rfstype not supported"\
+	exit 1
+	;;
+  esac
+}

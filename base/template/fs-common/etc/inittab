@@ -1,0 +1,24 @@
+# /etc/inittab
+
+# System configuration/initialization script.
+# This is run first except when booting in single-user mode
+#
+::sysinit:/etc/init.d/rcS
+
+# Start an "askfirst" shell on the console
+::askfirst:-/bin/sh
+
+# Things to do when restarting the init process
+::restart:/sbin/init
+
+tty2::respawn:/sbin/getty 38400 tty2
+tty5::respawn:/sbin/getty 38400 tty5
+
+#ttyS0
+::respawn:/sbin/getty -L ttyS0 38400 vt100
+
+
+# Things to do before rebooting
+::ctrlaltdel:/sbin/reboot
+::shutdown:/bin/umount -a -r
+::shutdown:/sbin/swapoff -a

@@ -1,0 +1,5 @@
+rootfs / rootfs rw 0 0
+/dev/root / nfs rw,v2,rsize=4096,wsize=4096,hard,nolock,proto=udp,addr=192.100.1.1 0 0
+/proc /proc proc rw 0 0
+/dev/shm /var tmpfs size=16M 0 0
+sys /sys sysfs rw 0 0
