@@ -1,0 +1,28 @@
+author: Ganesh Gudigara
+
+please refer linphone.txt for some sample execution
+even you can use iptel.org 
+1.create a user in iptel.org
+2.register the user using add proxy/registrar
+3.do a call echo test
+4.try to call another user in iptel.org
+
+BUILD
+======
+
+1.make TARGET=x86 will build for x86
+2.default build is for arm.
+3.Edit install-path-$(TARGET) tool-path-$(TARGET) and
+root-path-$(TARGET) to point your build paths.
+where $(TARGET) is arm for example.
+3.for x86 no $(TARGET) prefix is added.
+
+TIPS for build
+==============
+1.if libncurses.a already exist please rename it otherwise
+build will break because we are using latest libncurses which
+has lot of new functions.
+type:
+strip linphonec           for x86 
+arm-linux-strip linphonec for arm
+
