@@ -1,0 +1,98 @@
+############################################################################
+#	  	File    : default config for products
+#		Author  : Ganesh Gudigara
+#		Copyright (C) Mirmitsu Technologies Pvt Ltd
+#
+###########################################################################
+BUILD_TOPDIR := $(TOPDIR)/obj
+SRC_TOPDIR := $(TOPDIR)/src
+INSTALL_TOPDIR := $(TOPDIR)/out
+DISTCONF_TOPDIR := $(TOPDIR)/dist
+export BUILD_TOPDIR INSTALL_TOPDIR SRC_TOPDIR DISTCONF_TOPDIR
+
+ifneq ($(PRODUCT),)
+  include $(TOPDIR)/base/products/$(PRODUCT).txt
+  DESTDIR   := $(INSTALL_TOPDIR)/$(PRODUCT)-$(PRODUCTVERSION)
+  ROOT_BASE := /usr/smartpathindia
+  PREFIX := $(ROOT_BASE)/fs
+  CORE_PREFIX := core
+  MOD_PREFIX := $(CORE_PREFIX)/drivers
+  KSUFF := $(PRODUCT)-$(PRODUCTVERSION)
+  KERNEL_CONFDIR := $(TOPDIR)/src/kernel/$(KERNEL_LOCALCONFDIR)
+  KERNEL_CONFIG := $(KERNEL_CONFDIR)/configs/$(KERNEL_CONFFILE)
+  KERNELDIR := $(BUILD_TOPDIR)/$(PRODUCT)/kernel/linux-$(KERNEL_VERSION)-$(KSUFF)
+  KERNEL  := $(KERNELDIR)/arch/$(ARCH)/boot/$(KERNEL_IMAGE)
+  RELEASE_ROOT := $(TOPDIR)/release/$(PRODUCT)-$(PRODUCTVERSION)
+  X11 := 1
+  CFG_MALLOCRETURNSNULL := --disable-malloc0returnsnull
+else
+ifeq ($(ARCH), arm)
+  CROSS=arm-linux-
+  ROOT_BASE := /apps
+  PREFIX := $(ROOT_BASE)
+  CORE_PREFIX := $(ROOT_BASE)
+  MOD_PREFIX :=  $(ROOT_BASE)
+  TOOLCHAINDIR := /usr/arm-linux
+  KVER  := 2.6.16
+  KSUFF := $(PRODUCT)-$(PRODUCTVERSION)
+  KERNELDIR := $(BUILD_TOPDIR)/$(PRODUCT)/kernel/linux-$(KVER)-$(KSUFF)
+endif
+
+ifeq ($(ARCH),)
+  ARCH = $(shell uname -m)
+endif
+
+ifeq ($(ARCH), i686) 
+    ifeq ($(PRODUCT),)
+    PRODUCT := generic
+    PRODUCTVERSION := 0.0.1
+    PRODUCTNAME := generic
+    endif
+    ROOT_BASE := /usr/local
+endif
+
+ifeq ($(ARCH), x86_64) 
+    ifeq ($(PRODUCT),)
+    PRODUCT := generic-$(ARCH)
+    PRODUCTVERSION := 0.0.1
+    PRODUCTNAME := generic-$(ARCH)
+    endif
+    ROOT_BASE := /usr/local
+endif
+
+endif
+
+ifeq ($(PREFIX),)
+  PREFIX := $(ROOT_BASE)
+endif
+
+ifeq ($(KVER), )
+  KVER   := $(shell uname -r)
+endif
+
+ifeq ($(MOD_PREFIX),)
+  MOD_PREFIX := $(ROOT_BASE)/lib/modules/$(KVER)
+endif
+
+CORE_PREFIX := $(PREFIX)
+
+ifeq ($(TOOLCHAINDIR), )
+  TOOLCHAINDIR := /usr
+endif
+
+ifeq ($(KERNELDIR),)
+ KERNELDIR := $(ROOT_BASE)/lib/modules/$(KVER)/build
+endif
+
+ifeq ($(CROSS),)
+ CROSS  := 
+endif
+
+
+ifeq ($(CFG_MALLOCRETURNSNULL), )
+  CFG_MALLOCRETURNSNULL := --disable-malloc0returnsnull
+endif
+
+DESTDIR   := $(INSTALL_TOPDIR)/$(PRODUCT)-$(PRODUCTVERSION)
+
+export ARCH CROSS PREFIX ROOT_BASE CORE_PREFIX MOD_PREFIX TOOLCHAIMDIR KVER KSUFF DESTDIR PRODUCT PRODUCTVERSION PRODUCTNAME ROOT_BASE CFG_MALLOCRETURNSNULL

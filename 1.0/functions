@@ -1,0 +1,67 @@
+
+
+ifeq ($(V),1)
+Q = 
+quiet_cmd =
+else
+Q = @
+quiet_cmd = @echo $(1) $(2) &&
+endif
+
+
+fllist =  $(addprefix $(1)/, $(shell ls $1 2>/dev/null))
+
+# apply patch using zcat or cat
+applypatch =  cd $(2) &&  $(1) $(3) | patch -p1; 
+
+# check for .gz files
+checkpatch =  $(if $(findstring .gz, $(2)),$(call applypatch,zcat,$(1),$(2)), \
+			$(call applypatch,cat,$(1),$(2)))
+
+
+# search all patch files
+do_patch =  $(call quiet_cmd, "PATCH	",$(1))  \
+		$(if $(wildcard $(2)), \
+		 $(foreach pfile,$(2), \
+			$(call checkpatch,$(1),$(pfile))), \
+			echo -e "PATCH	NOT FOUND")
+
+
+uncompress = cd $(3) && tar -m$(1) $(2)
+
+
+srccopy  = cp -a $(1) $(2)
+exitcmd  = echo "ERR: directory/archive not found" && exit 1
+
+do_untar =   $(call quiet_cmd,"CHECKTAR	  ",$(2)-$(3))  $(if $(wildcard $(1)/$(2)_$(3).orig.tar.gz), \
+			$(call uncompress,xzf,$(1)/$(2)_$(3).orig.tar.gz,$(4)), \
+			$(if $(wildcard $(1)/$(2)-$(3).tar.gz), \
+			$(call uncompress,xzf,$(1)/$(2)-$(3).tar.gz,$(4)), \
+			$(if $(wildcard $(1)/$(2)-$(3).tar.bz2), \
+			$(call uncompress,xjf,$(1)/$(2)-$(3).tar.bz2,$(4)), \
+			$(if $(wildcard $(1)/$(2)_$(3).tar.bz2), \
+			$(call uncompress,xjf,$(1)/$(2)_$(3).tar.bz2,$(4)), \
+			$(if $(wildcard $(5)/$(2)-$(3)),  \
+			$(call srccopy, $(5)/$(2)-$(3), $(4)), \
+			$(call exitcmd) \
+			))))) 
+
+
+create_base = $(call quiet_cmd, "CREATEBASE   ", $(1))  $(TOPDIR)/base/createbase $(1) $(2)
+
+builddirs =	$(Q)for mfile in $(1); do \
+		echo "OPERATION $@ $$mfile"; \
+	 	cd $(TOPDIR)/src/$$mfile && make $(2); \
+		 done
+
+
+check_make_cmd	= $(if $(wildcard $(1)/$(3)), $(if grep $(2) $(1)/$(3), \
+			cd $(1) && make $(2), echo "no command" ), echo "no directory or folder")
+			
+
+verifyprefix = if [ "x$(1)" != "x$(2)" ] && \
+		[ "x$(1)" != "x/usr/local"  ]; then \
+		 sudo rm -f $(1); \
+		 sudo mkdir -p `dirname $(1)`; \
+		 sudo ln -s $(2) $(1); \
+	        fi
